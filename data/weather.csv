@@ -1,0 +1,4 @@
+country,city,device_id,reading_ts,temperature,humidity
+Poland,Lodz,W001,2020-07-10 15:00:00.000,5.8,0.2
+Poland,Kielce,W028,2020-07-10 15:00:00.000,4.7,0.21
+Poland,Karkow,W032,2020-07-10 15:00:00.000,4.9,0.18
