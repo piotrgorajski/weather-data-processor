@@ -27,7 +27,7 @@ class Application(config: Config) {
     spark
   }
 
-  private def transform(weatherData: DataFrame, airQualityData: DataFrame): DataFrame = {
+  def transform(weatherData: DataFrame, airQualityData: DataFrame): DataFrame = {
     val hourlyWeatherData: Dataset[Row] = getHourlyWeatherData(weatherData)
     val hourlyAirQualityData: Dataset[Row] = getHourlyAirQualityData(airQualityData)
     hourlyWeatherData.join(hourlyAirQualityData, Seq("country", "city", "reading_date", "reading_hour"))
