@@ -2,7 +2,7 @@ package org.goraj.weatherapp.wdp
 
 import org.apache.spark.sql.functions.{avg, col, hour}
 import org.apache.spark.sql.types.DateType
-import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, RelationalGroupedDataset, Row, SparkSession}
 
 class Application(config: Config) {
 
@@ -11,12 +11,12 @@ class Application(config: Config) {
     val spark: SparkSession = getOrCreateSparkSession
     val weatherData = spark.read.option("header", true).option("inferSchema", true).csv("data/weather.csv")
     val airQualityData = spark.read.option("header", true).option("inferSchema", true).csv("data/air-quality.csv")
-    val outputData: DataFrame = transform(weatherData, airQualityData)
+    val outputData = transform(weatherData, airQualityData)
     writeOutputData(outputData)
     spark.close()
   }
 
-  private def getOrCreateSparkSession = {
+  private def getOrCreateSparkSession: SparkSession = {
     val spark = SparkSession.builder()
       .appName("Weather Data Processor")
       .config("spark.hadoop.fs.s3a.access.key", "admin")
@@ -27,37 +27,35 @@ class Application(config: Config) {
     spark
   }
 
-  private def transform(weatherData: DataFrame, airQualityData: DataFrame) = {
+  private def transform(weatherData: DataFrame, airQualityData: DataFrame): DataFrame = {
     val hourlyWeatherData: Dataset[Row] = getHourlyWeatherData(weatherData)
     val hourlyAirQualityData: Dataset[Row] = getHourlyAirQualityData(airQualityData)
     hourlyWeatherData.join(hourlyAirQualityData, Seq("country", "city", "reading_date", "reading_hour"))
   }
 
-  private def getHourlyWeatherData(weatherData: DataFrame) = {
-    val hourlyWeatherData = weatherData
+  private def getHourlyWeatherData(weatherData: DataFrame): DataFrame = {
+    weatherData
       .transform(filterByProcessingDate)
       .transform(df =>
         groupByCountryCityAndHour(df)
           .agg(avg("temperature").as("avg_temperature"), avg("humidity").as("avg_humidity"))
       )
-    hourlyWeatherData
   }
 
-  private def getHourlyAirQualityData(airQualityData: DataFrame) = {
-    val hourlyAirQualityData = airQualityData
+  private def getHourlyAirQualityData(airQualityData: DataFrame): DataFrame = {
+    airQualityData
       .transform(filterByProcessingDate)
       .transform(df =>
         groupByCountryCityAndHour(df)
           .agg(avg("pm10").as("avg_pm10"), avg("pm25").as("avg_pm25"))
       )
-    hourlyAirQualityData
   }
 
   private def filterByProcessingDate(df: DataFrame): DataFrame = {
     df.filter(col("reading_ts").cast(DateType).equalTo(config.processingDate))
   }
 
-  private def groupByCountryCityAndHour(df: DataFrame) = {
+  private def groupByCountryCityAndHour(df: DataFrame): RelationalGroupedDataset = {
     df
       .withColumn("reading_date", col("reading_ts").cast(DateType))
       .withColumn("reading_hour", hour(col("reading_ts")))
