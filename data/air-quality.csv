@@ -1,0 +1,5 @@
+country,city,device_id,reading_ts,pm10,pm25
+Poland,Lodz,AQ008,2020-07-10 15:00:00.000,44,13
+Poland,Lodz,AQ008,2020-07-10 14:00:00.000,84,43
+Poland,Lodz,AQ008,2020-07-10 14:05:00.000,18,23
+Poland,Kielce,AQ026,2020-07-10 15:00:00.000,21,17
