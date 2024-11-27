@@ -53,3 +53,6 @@ docker run --rm -it --network spark-minio-network weather-data-processor \
 
 #### In Docker
 `docker compose up -d`
+
+##### Troubleshooting
+Access the Spark container: `docker run --rm -it --entrypoint bash weather-data-processor`
