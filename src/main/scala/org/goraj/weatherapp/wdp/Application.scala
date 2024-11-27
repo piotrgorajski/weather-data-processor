@@ -19,10 +19,6 @@ class Application(config: Config) {
   private def getOrCreateSparkSession: SparkSession = {
     val spark = SparkSession.builder()
       .appName("Weather Data Processor")
-      .config("spark.hadoop.fs.s3a.access.key", "admin")
-      .config("spark.hadoop.fs.s3a.secret.key", "password")
-      .config("spark.hadoop.fs.s3a.endpoint", "http://localhost:9000")
-      .config("spark.hadoop.fs.s3a.path.style.access", "true")
       .master("local[*]").getOrCreate()
     spark
   }

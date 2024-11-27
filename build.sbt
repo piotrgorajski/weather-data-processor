@@ -1,6 +1,6 @@
 name := "weather-data-processor"
 version := "0.1"
-scalaVersion := "2.13.15"
+scalaVersion := "2.12.19"
 
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-sql" % "3.5.3" % Provided,
