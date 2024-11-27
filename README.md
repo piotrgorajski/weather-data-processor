@@ -1,66 +1,55 @@
 # weather-data-processor
-Process weather data (temperature, humidity and air quality)
+Process weather data (temperature, humidity and air quality).
 
 ## Local Setup
 
 ### Component versions:
+- Java 11
 - Spark 3.5.3
 - Hadoop 3.3.6
-- Java 11
 
-### Hadoop
-Download winutils.exe and hadoop.dll
+### Prerequisites
 
-Place under hadoop_home/bin
+#### Java
+1. Install Java 11
+2. Set JAVA_HOME
+3. Add JAVA_HOME/bin to PATH
 
-### MinIO
+#### Spark
+1. Download Spark 3.5.3 for Hadoop 3 and Scala 2.12 (https://spark.apache.org/downloads.html)
+2. Set SPARK_HOME
+3. Add SPARK_HOME/bin to PATH
 
-Start MinIO:
+#### Hadoop
+1. From https://github.com/cdarlint/winutils download (hadoop-3.3.6/bin):
+    - winutils.exe
+    - hadoop.dll
+2. Move files to C:\hadoop\bin
+3. Set HADOOP_HOME
+4. Add HADOOP_HOME/bin to PATH
+
+#### Docker (to run app in a container)
+1. Install Docker engine
+
+### Building the app
+
+#### Uber JAR
+`sbt assembly`
+
+#### Docker image
+`docker build -t weather-data-processor .`
+
+### Running the app
+
+#### On local host
 ```
-docker run -d --name minio \
--p 9000:9000 -p 9001:9001 \
--e "MINIO_ROOT_USER=admin" \
--e "MINIO_ROOT_PASSWORD=password" \
-minio/minio server /data --console-address ":9001"
+docker run --rm -it --network spark-minio-network weather-data-processor \
+--master local[*] \
+--name weather-data-processor \
+--class org.goraj.weatherapp.wdp.Entrypoint \
+/app/weather-data-processor-assembly-0.1.jar \
+-d 2020-07-10
 ```
 
-### Kubernetes setup
-
-1. Start Minikube. Spark requires more resources than Minikube's defaults:
-    `minikube start --cpus=4 --memory=8g`
-2. Enable Docker in Minikube:
-    `eval $(minikube docker-env)`
-3. Build a Docker Image for Your Spark Application
-   1. Write a Dockerfile to include your Spark application:
-    ```
-    FROM bitnami/spark:latest
-    COPY target/scala-2.13/my-spark-app_2.13-1.0.jar /app/my-spark-app.jar
-    ENTRYPOINT ["/opt/bitnami/spark/bin/spark-submit"]
-   ```
-   2. Build the Docker image:
-    `docker build -t my-spark-app:latest .`
-4. Create service account for spark:
-    `kubectl create serviceaccount spark-sa`
-5. Grant service account a ClusterRole:
-    `kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark-sa --namespace=default`
-6. Submit spark application:
-    ```
-   ./bin/spark-submit \
-    --master k8s://https://localhost:32786 \
-    --deploy-mode cluster \
-    --name spark-pi \
-    --class org.apache.spark.examples.SparkPi \
-    --conf spark.executor.instances=2 \
-    --conf spark.kubernetes.container.image=spark:local \
-    --conf spark.kubernetes.context=minikube \
-    --conf spark.kubernetes.namespace=default \
-    --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark-sa \
-    local:///opt/spark/examples/jars/spark-examples_2.12-3.5.3.jar
-   ```
-7. Monitor the app:
-   1. Check running pods:
-   `kubectl get pods`
-   2. View logs of the Spark driver:
-  `kubectl logs <spark-driver-pod-name>`
-   3. Access Spark UI:
-   `kubectl port-forward <driver-pod-name> 4040:4040`
+#### In Docker
+`docker compose up -d`

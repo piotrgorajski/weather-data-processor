@@ -19,7 +19,7 @@ class Application(config: Config) {
   private def getOrCreateSparkSession: SparkSession = {
     val spark = SparkSession.builder()
       .appName("Weather Data Processor")
-      .master("local[*]").getOrCreate()
+      .getOrCreate()
     spark
   }
 

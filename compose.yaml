@@ -1,0 +1,19 @@
+services:
+  weather-data-processor:
+    image: weather-data-processor
+    container_name: weather-data-processor
+    command: >
+      --master local[*]
+      --class org.goraj.weatherapp.wdp.Entrypoint
+      /app/weather-data-processor-assembly-0.1.jar
+      -d 2020-07-10
+    networks:
+      - spark-minio-network
+    stdin_open: true  # For interactive terminal (equivalent to -it)
+    tty: true         # For terminal handling
+    restart: "no"     # Equivalent to --rm for cleaning up after the container stops
+
+networks:
+  spark-minio-network:
+    name: spark-minio-network
+    external: true
